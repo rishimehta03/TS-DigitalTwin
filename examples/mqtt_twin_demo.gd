@@ -56,7 +56,11 @@ func _on_mqtt_message(topic: String, payload: String):
 		var property_name = parts[3]  # Last part is the property
 		
 		# Update digital twin property
-		var value = payload.to_float() if payload.is_valid_float() else payload
+		var value
+		if payload.is_valid_float():
+			value = payload.to_float()
+		else:
+			value = payload
 		motor_twin.set_property(property_name, value)
 		
 		print("  → Updated twin property: ", property_name, " = ", value)

@@ -236,9 +236,9 @@ void MQTTClient::_handle_connack(const PackedByteArray &p_data) {
 	uint8_t return_code = p_data[3];
 
 	if (return_code == 0) {
-		state = STATE_CONNECTED;
-		emit_signal("connected");
+		state = STATE_CONNECTED;  // Set state BEFORE emitting signal
 		print_line("MQTT: Connected to broker successfully");
+		emit_signal("connected");  // Now signal can safely call subscribe()
 	} else {
 		state = STATE_ERROR;
 		String error_msg = "Connection refused (code: " + itos(return_code) + ")";
