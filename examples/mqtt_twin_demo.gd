@@ -43,9 +43,8 @@ func _on_mqtt_connected():
 	mqtt_client.subscribe("tdtstack/demo/motor001/voltage")
 	
 	print("Subscribed to motor topics.")
-	print("\nTo test, publish messages using mosquitto_pub:")
-	print('  mosquitto_pub -h test.mosquitto.org -t "tdtstack/demo/motor001/temperature" -m "75.5"')
-	print('  mosquitto_pub -h test.mosquitto.org -t "tdtstack/demo/motor001/rpm" -m "1800"')
+	print("\n✅ Ready to receive MQTT messages!")
+	print("Test with: mosquitto_pub -h localhost -t \"tdtstack/demo/motor001/temperature\" -m \"75.5\"")
 
 func _on_mqtt_message(topic: String, payload: String):
 	print("MQTT Message: ", topic, " = ", payload)
