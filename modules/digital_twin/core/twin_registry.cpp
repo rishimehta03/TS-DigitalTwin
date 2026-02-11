@@ -82,12 +82,16 @@ bool TwinRegistry::has_twin(const String &p_twin_id) const {
 	return twins.has(p_twin_id);
 }
 
-Vector<Ref<DigitalTwin>> TwinRegistry::get_all_twins() const {
-	return twin_list;
+Array TwinRegistry::get_all_twins() const {
+	Array result;
+	for (const Ref<DigitalTwin> &twin : twin_list) {
+		result.push_back(twin);
+	}
+	return result;
 }
 
-Vector<Ref<DigitalTwin>> TwinRegistry::get_twins_by_type(const String &p_type) const {
-	Vector<Ref<DigitalTwin>> result;
+Array TwinRegistry::get_twins_by_type(const String &p_type) const {
+	Array result;
 	for (const Ref<DigitalTwin> &twin : twin_list) {
 		if (twin->get_twin_type() == p_type) {
 			result.push_back(twin);

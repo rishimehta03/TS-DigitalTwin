@@ -5,13 +5,6 @@ Import("env_modules")
 
 env_dt = env_modules.Clone()
 
-# Godot source files
-module_obj = []
-
-env_dt.add_source_files(module_obj, "*.cpp")
-env_dt.add_source_files(module_obj, "core/*.cpp")
-
-env.modules_sources += module_obj
-
-# Needed to force rebuild the module files when the thirdparty library is updated.
-env.Depends(module_obj, thirdparty_obj)
+# Add source files for digital_twin module
+env_dt.add_source_files(env.modules_sources, "*.cpp")
+env_dt.add_source_files(env.modules_sources, "core/*.cpp")

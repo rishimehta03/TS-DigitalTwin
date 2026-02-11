@@ -44,8 +44,8 @@ public:
 	bool has_twin(const String &p_twin_id) const;
 
 	// Queries
-	Vector<Ref<DigitalTwin>> get_all_twins() const;
-	Vector<Ref<DigitalTwin>> get_twins_by_type(const String &p_type) const;
+	Array get_all_twins() const;
+	Array get_twins_by_type(const String &p_type) const;
 	int get_twin_count() const;
 
 	// Utility
