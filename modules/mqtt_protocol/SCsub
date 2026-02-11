@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_mqtt = env_modules.Clone()
+
+# Add source files for mqtt_protocol module
+env_mqtt.add_source_files(env.modules_sources, "*.cpp")
