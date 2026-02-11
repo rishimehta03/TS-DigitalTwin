@@ -4,6 +4,48 @@
 
 // Continue from mqtt_client.cpp
 
+void MQTTClient::poll() {
+	if (state == STATE_CONNECTING) {
+		// CRITICAL: Poll the TCP client to update its status
+		tcp_client->poll();
+		
+		StreamPeerTCP::Status status = tcp_client->get_status();
+		
+		// Debug: print status
+		static StreamPeerTCP::Status last_printed_status = StreamPeerTCP::STATUS_NONE;
+		if (status != last_printed_status) {
+			print_line(vformat("MQTT: TCP status changed to %d (0=NONE, 1=CONNECTING, 2=CONNECTED, 3=ERROR)", status));
+			last_printed_status = status;
+		}
+		
+		if (status == StreamPeerTCP::STATUS_CONNECTED) {
+			// Send CONNECT packet
+			PackedByteArray connect_packet = _build_connect_packet();
+			Error err = tcp_client->put_data(connect_packet.ptr(), connect_packet.size());
+			last_activity_time = Time::get_singleton()->get_ticks_msec() / 1000.0;
+			print_line(vformat("MQTT: TCP connected, sent CONNECT packet (%d bytes), put_data returned %d", connect_packet.size(), err));
+		} else if (status == StreamPeerTCP::STATUS_ERROR) {
+			state = STATE_ERROR;
+			emit_signal("connection_failed", "TCP connection error");
+			print_line("MQTT: TCP status is ERROR");
+		}
+	}
+
+	if (state == STATE_CONNECTED || state == STATE_CONNECTING) {
+		_process_incoming_data();
+
+		// Keep-alive ping
+		if (keep_alive_enabled && state == STATE_CONNECTED) {
+			float current_time = Time::get_singleton()->get_ticks_msec() / 1000.0;
+			if (current_time - last_activity_time > keep_alive_interval) {
+				PackedByteArray ping = _build_pingreq_packet();
+				tcp_client->put_data(ping.ptr(), ping.size());
+				last_activity_time = current_time;
+			}
+		}
+	}
+}
+
 PackedByteArray MQTTClient::_build_connect_packet() {
 	PackedByteArray packet;
 

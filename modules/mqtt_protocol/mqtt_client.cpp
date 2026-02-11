@@ -177,35 +177,7 @@ void MQTTClient::set_keep_alive(bool p_enabled, float p_interval) {
 	keep_alive_interval = p_interval;
 }
 
-void MQTTClient::poll() {
-	if (state == STATE_CONNECTING) {
-		StreamPeerTCP::Status status = tcp_client->get_status();
-		if (status == StreamPeerTCP::STATUS_CONNECTED) {
-			// Send CONNECT packet
-			PackedByteArray connect_packet = _build_connect_packet();
-			tcp_client->put_data(connect_packet.ptr(), connect_packet.size());
-			last_activity_time = Time::get_singleton()->get_ticks_msec() / 1000.0;
-			print_line("MQTT: TCP connected, sent CONNECT packet");
-		} else if (status == StreamPeerTCP::STATUS_ERROR) {
-			state = STATE_ERROR;
-			emit_signal("connection_failed", "TCP connection error");
-		}
-	}
 
-	if (state == STATE_CONNECTED || state == STATE_CONNECTING) {
-		_process_incoming_data();
-
-		// Keep-alive ping
-		if (keep_alive_enabled) {
-			float current_time = Time::get_singleton()->get_ticks_msec() / 1000.0;
-			if (current_time - last_activity_time > keep_alive_interval) {
-				PackedByteArray ping = _build_pingreq_packet();
-				tcp_client->put_data(ping.ptr(), ping.size());
-				last_activity_time = current_time;
-			}
-		}
-	}
-}
 
 String MQTTClient::get_broker_address() const {
 	return broker_address;
