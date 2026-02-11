@@ -72,6 +72,7 @@ MQTTClient::MQTTClient() {
 	keep_alive_enabled = true;
 	keep_alive_interval = 60.0;
 	last_activity_time = 0;
+	connect_sent = false;
 }
 
 MQTTClient::~MQTTClient() {
@@ -98,6 +99,7 @@ Error MQTTClient::connect_to_broker(const String &p_address, int p_port, const S
 	}
 
 	state = STATE_CONNECTING;
+	connect_sent = false;  // Reset flag for new connection
 	return OK;
 }
 

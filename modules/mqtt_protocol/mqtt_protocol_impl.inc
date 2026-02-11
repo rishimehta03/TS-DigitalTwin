@@ -10,10 +10,18 @@ void MQTTClient::poll() {
 		return;
 	}
 	
+	// CRITICAL: Always poll the TCP client to keep connection alive and process data
+	tcp_client->poll();
+	
+	// DEBUG: Log poll activity every 60 frames (once per second at 60fps)
+	static int poll_counter = 0;
+	poll_counter++;
+	if (poll_counter % 60 == 0 && state == STATE_CONNECTED) {
+		int avail = tcp_client->get_available_bytes();
+		print_line(vformat("[Poll] State=%d, TCP_Status=%d, Available_bytes=%d", state, tcp_client->get_status(), avail));
+	}
+	
 	if (state == STATE_CONNECTING) {
-		// CRITICAL: Poll the TCP client to update its status
-		tcp_client->poll();
-		
 		StreamPeerTCP::Status status = tcp_client->get_status();
 		
 		// Debug: print status
@@ -23,11 +31,13 @@ void MQTTClient::poll() {
 			last_printed_status = status;
 		}
 		
-		if (status == StreamPeerTCP::STATUS_CONNECTED) {
+		// Only send CONNECT packet once when TCP connection is established
+		if (status == StreamPeerTCP::STATUS_CONNECTED && !connect_sent) {
 			// Send CONNECT packet
 			PackedByteArray connect_packet = _build_connect_packet();
 			Error err = tcp_client->put_data(connect_packet.ptr(), connect_packet.size());
 			last_activity_time = Time::get_singleton()->get_ticks_msec() / 1000.0;
+			connect_sent = true;  // Mark as sent to prevent duplicates
 			print_line(vformat("MQTT: TCP connected, sent CONNECT packet (%d bytes), put_data returned %d", connect_packet.size(), err));
 		} else if (status == StreamPeerTCP::STATUS_ERROR) {
 			state = STATE_ERROR;
@@ -207,23 +217,32 @@ void MQTTClient::_process_incoming_data() {
 	data.resize(received);
 	last_activity_time = Time::get_singleton()->get_ticks_msec() / 1000.0;
 
+	// DEBUG: Print raw packet info
+	print_line(vformat("MQTT: Received %d bytes, first byte: 0x%02X", received, data[0]));
+
 	uint8_t packet_type = data[0] & 0xF0;
+	
+	print_line(vformat("MQTT: Packet type: 0x%02X", packet_type));
 
 	switch (packet_type) {
 		case MQTT_CONNACK:
+			print_line("MQTT: Processing CONNACK");
 			_handle_connack(data);
 			break;
 		case MQTT_PUBLISH:
+			print_line("MQTT: Processing PUBLISH");
 			_handle_publish(data);
 			break;
 		case MQTT_SUBACK:
+			print_line("MQTT: Processing SUBACK");
 			_handle_suback(data);
 			break;
 		case MQTT_PINGRESP:
+			print_line("MQTT: Processing PINGRESP");
 			_handle_pingresp(data);
 			break;
 		default:
-			// Unknown packet type, ignore
+			print_line(vformat("MQTT: Unknown packet type 0x%02X, ignoring", packet_type));
 			break;
 	}
 }

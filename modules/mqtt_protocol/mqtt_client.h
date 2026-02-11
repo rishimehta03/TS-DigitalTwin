@@ -48,6 +48,7 @@ private:
 	bool keep_alive_enabled;
 	float keep_alive_interval;
 	float last_activity_time;
+	bool connect_sent;  // Flag to prevent sending CONNECT multiple times
 	
 	// Subscribed topics and callbacks
 	Dictionary subscriptions; // topic -> QoS
