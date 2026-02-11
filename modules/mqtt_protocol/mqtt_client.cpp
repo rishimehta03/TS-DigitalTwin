@@ -133,7 +133,8 @@ void MQTTClient::set_credentials(const String &p_username, const String &p_passw
 }
 
 Error MQTTClient::subscribe(const String &p_topic, QoS p_qos) {
-	if (!is_connected()) {
+	// Only check MQTT state, not TCP status (TCP is already validated if we're CONNECTED)
+	if (state != STATE_CONNECTED) {
 		WARN_PRINT("Cannot subscribe: not connected to broker");
 		return ERR_UNCONFIGURED;
 	}
@@ -163,7 +164,8 @@ Error MQTTClient::unsubscribe(const String &p_topic) {
 }
 
 Error MQTTClient::publish(const String &p_topic, const String &p_payload, QoS p_qos, bool p_retain) {
-	if (!is_connected()) {
+	// Only check MQTT state, not TCP status
+	if (state != STATE_CONNECTED) {
 		WARN_PRINT("Cannot publish: not connected to broker");
 		return ERR_UNCONFIGURED;
 	}
