@@ -66,7 +66,8 @@ void DigitalTwin::_bind_methods() {
 	// State
 	ClassDB::bind_method(D_METHOD("to_dict"), &DigitalTwin::to_dict);
 	ClassDB::bind_method(D_METHOD("from_dict", "dict"), &DigitalTwin::from_dict);
-	ClassDB::bind_method(D_METHOD("to_string"), &DigitalTwin::to_string);
+	// Note: to_string() not bound to avoid conflict with Object::to_string()
+	// Use _to_string() override instead for GDScript print()
 
 	// Signals
 	ADD_SIGNAL(MethodInfo("property_changed", PropertyInfo(Variant::STRING, "property_name"), PropertyInfo(Variant::NIL, "new_value")));

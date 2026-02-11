@@ -5,6 +5,11 @@
 // Continue from mqtt_client.cpp
 
 void MQTTClient::poll() {
+	// Don't poll if disconnected or socket is invalid
+	if (state == STATE_DISCONNECTED || tcp_client.is_null()) {
+		return;
+	}
+	
 	if (state == STATE_CONNECTING) {
 		// CRITICAL: Poll the TCP client to update its status
 		tcp_client->poll();
@@ -179,6 +184,11 @@ PackedByteArray MQTTClient::_build_disconnect_packet() {
 }
 
 void MQTTClient::_process_incoming_data() {
+	// Safety check: only read if socket is connected
+	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
+		return;
+	}
+	
 	int available = tcp_client->get_available_bytes();
 	if (available <= 0) {
 		return;

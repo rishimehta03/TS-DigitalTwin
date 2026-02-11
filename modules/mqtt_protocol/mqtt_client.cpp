@@ -25,7 +25,7 @@ void MQTTClient::_bind_methods() {
 	// Connection
 	ClassDB::bind_method(D_METHOD("connect_to_broker", "address", "port", "client_id"), &MQTTClient::connect_to_broker, DEFVAL(1883), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("disconnect_from_broker"), &MQTTClient::disconnect_from_broker);
-	ClassDB::bind_method(D_METHOD("is_connected"), &MQTTClient::is_connected);
+	ClassDB::bind_method(D_METHOD("is_mqtt_connected"), &MQTTClient::is_connected);
 	ClassDB::bind_method(D_METHOD("get_connection_state"), &MQTTClient::get_connection_state);
 
 	// Authentication
